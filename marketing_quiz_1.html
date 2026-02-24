@@ -1,0 +1,755 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Quiz การตลาด</title>
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;600;700&family=Kanit:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0d0d1a;
+    --surface: #13132a;
+    --card: #1a1a35;
+    --accent: #f7c948;
+    --accent2: #ff6b6b;
+    --accent3: #4ecdc4;
+    --text: #e8e8f0;
+    --muted: #7878a0;
+    --correct: #4ecdc4;
+    --wrong: #ff6b6b;
+    --border: rgba(255,255,255,0.08);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Sarabun', sans-serif;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 24px 16px 60px;
+    background-image: 
+      radial-gradient(ellipse at 20% 20%, rgba(247,201,72,0.06) 0%, transparent 50%),
+      radial-gradient(ellipse at 80% 80%, rgba(78,205,196,0.05) 0%, transparent 50%);
+  }
+
+  /* ---- HEADER ---- */
+  .header {
+    text-align: center;
+    margin-bottom: 36px;
+    animation: fadeDown 0.6s ease both;
+  }
+  .header .tag {
+    display: inline-block;
+    background: rgba(247,201,72,0.15);
+    border: 1px solid rgba(247,201,72,0.3);
+    color: var(--accent);
+    font-family: 'Kanit', sans-serif;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    padding: 4px 14px;
+    border-radius: 20px;
+    margin-bottom: 16px;
+  }
+  .header h1 {
+    font-family: 'Kanit', sans-serif;
+    font-weight: 800;
+    font-size: clamp(28px, 5vw, 48px);
+    line-height: 1.1;
+    background: linear-gradient(135deg, #f7c948 0%, #ff9f43 50%, #ff6b6b 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 10px;
+  }
+  .header p {
+    color: var(--muted);
+    font-size: 15px;
+  }
+
+  /* ---- PROGRESS ---- */
+  .progress-wrap {
+    width: 100%;
+    max-width: 680px;
+    margin-bottom: 28px;
+    animation: fadeDown 0.6s 0.1s ease both;
+  }
+  .progress-meta {
+    display: flex;
+    justify-content: space-between;
+    font-size: 13px;
+    color: var(--muted);
+    margin-bottom: 8px;
+  }
+  .progress-meta span:last-child { color: var(--accent); font-weight: 600; }
+  .progress-bar-bg {
+    background: rgba(255,255,255,0.06);
+    border-radius: 99px;
+    height: 6px;
+    overflow: hidden;
+  }
+  .progress-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent), #ff9f43);
+    border-radius: 99px;
+    transition: width 0.5s cubic-bezier(.4,0,.2,1);
+  }
+
+  /* ---- CARD ---- */
+  .quiz-card {
+    width: 100%;
+    max-width: 680px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 36px 32px;
+    animation: slideUp 0.5s ease both;
+    position: relative;
+    overflow: hidden;
+  }
+  .quiz-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--accent), #ff9f43, var(--accent2));
+  }
+
+  .chapter-badge {
+    display: inline-block;
+    background: rgba(78,205,196,0.1);
+    border: 1px solid rgba(78,205,196,0.25);
+    color: var(--accent3);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 1px;
+    padding: 3px 12px;
+    border-radius: 20px;
+    margin-bottom: 18px;
+    font-family: 'Kanit', sans-serif;
+  }
+
+  .question-num {
+    font-family: 'Kanit', sans-serif;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--muted);
+    letter-spacing: 1px;
+    margin-bottom: 10px;
+  }
+  .question-text {
+    font-size: 18px;
+    font-weight: 600;
+    line-height: 1.6;
+    color: var(--text);
+    margin-bottom: 28px;
+    font-family: 'Kanit', sans-serif;
+  }
+
+  /* ---- OPTIONS ---- */
+  .options { display: flex; flex-direction: column; gap: 12px; }
+  .option {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 16px 20px;
+    background: rgba(255,255,255,0.04);
+    border: 1.5px solid rgba(255,255,255,0.08);
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-align: left;
+    width: 100%;
+    font-family: 'Sarabun', sans-serif;
+    font-size: 15px;
+    color: var(--text);
+    user-select: none;
+  }
+  .option:hover:not(:disabled) {
+    border-color: rgba(247,201,72,0.35);
+    background: rgba(247,201,72,0.06);
+    transform: translateX(4px);
+  }
+  .option-letter {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.12);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Kanit', sans-serif;
+    font-weight: 700;
+    font-size: 13px;
+    color: var(--muted);
+    flex-shrink: 0;
+    transition: all 0.2s;
+  }
+  .option:hover:not(:disabled) .option-letter {
+    background: rgba(247,201,72,0.15);
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+  .option.correct {
+    border-color: var(--correct);
+    background: rgba(78,205,196,0.08);
+  }
+  .option.correct .option-letter {
+    background: var(--correct);
+    border-color: var(--correct);
+    color: #0d0d1a;
+  }
+  .option.wrong {
+    border-color: var(--wrong);
+    background: rgba(255,107,107,0.08);
+  }
+  .option.wrong .option-letter {
+    background: var(--wrong);
+    border-color: var(--wrong);
+    color: #fff;
+  }
+  .option:disabled { cursor: default; }
+
+  /* ---- FEEDBACK ---- */
+  .feedback {
+    margin-top: 20px;
+    padding: 16px 20px;
+    border-radius: 12px;
+    font-size: 14px;
+    line-height: 1.6;
+    display: none;
+    animation: fadeUp 0.3s ease both;
+  }
+  .feedback.show { display: block; }
+  .feedback.correct-fb {
+    background: rgba(78,205,196,0.1);
+    border: 1px solid rgba(78,205,196,0.25);
+    color: var(--accent3);
+  }
+  .feedback.wrong-fb {
+    background: rgba(255,107,107,0.08);
+    border: 1px solid rgba(255,107,107,0.2);
+    color: #ff9999;
+  }
+  .feedback strong { font-family: 'Kanit', sans-serif; display: block; margin-bottom: 4px; font-size: 15px; }
+
+  /* ---- BUTTONS ---- */
+  .btn-next {
+    margin-top: 24px;
+    width: 100%;
+    padding: 16px;
+    background: linear-gradient(135deg, var(--accent), #ff9f43);
+    color: #0d0d1a;
+    border: none;
+    border-radius: 12px;
+    font-family: 'Kanit', sans-serif;
+    font-weight: 700;
+    font-size: 16px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: none;
+    letter-spacing: 0.5px;
+  }
+  .btn-next.show { display: block; }
+  .btn-next:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(247,201,72,0.3); }
+  .btn-next:active { transform: translateY(0); }
+
+  /* ---- RESULT ---- */
+  .result-screen {
+    display: none;
+    width: 100%;
+    max-width: 680px;
+    text-align: center;
+    animation: slideUp 0.5s ease both;
+  }
+  .result-screen.show { display: block; }
+  .result-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 48px 32px;
+    position: relative;
+    overflow: hidden;
+  }
+  .result-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--accent), #ff9f43, var(--accent2));
+  }
+  .result-emoji { font-size: 64px; margin-bottom: 16px; display: block; }
+  .result-title {
+    font-family: 'Kanit', sans-serif;
+    font-weight: 800;
+    font-size: 32px;
+    margin-bottom: 8px;
+    background: linear-gradient(135deg, #f7c948, #ff9f43);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .result-score {
+    font-family: 'Kanit', sans-serif;
+    font-size: 64px;
+    font-weight: 800;
+    color: var(--accent);
+    line-height: 1;
+    margin: 24px 0 8px;
+  }
+  .result-score span { font-size: 24px; color: var(--muted); }
+  .result-sub { color: var(--muted); font-size: 15px; margin-bottom: 32px; }
+  .result-grade {
+    display: inline-block;
+    padding: 10px 28px;
+    border-radius: 40px;
+    font-family: 'Kanit', sans-serif;
+    font-weight: 700;
+    font-size: 18px;
+    margin-bottom: 36px;
+  }
+  .grade-s { background: rgba(78,205,196,0.15); border: 1.5px solid var(--accent3); color: var(--accent3); }
+  .grade-a { background: rgba(247,201,72,0.15); border: 1.5px solid var(--accent); color: var(--accent); }
+  .grade-b { background: rgba(255,159,67,0.15); border: 1.5px solid #ff9f43; color: #ff9f43; }
+  .grade-c { background: rgba(255,107,107,0.15); border: 1.5px solid var(--wrong); color: var(--wrong); }
+
+  .result-stats {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 32px;
+  }
+  .stat-box {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px 12px;
+  }
+  .stat-box .num {
+    font-family: 'Kanit', sans-serif;
+    font-weight: 800;
+    font-size: 28px;
+    color: var(--text);
+    display: block;
+  }
+  .stat-box .num.green { color: var(--correct); }
+  .stat-box .num.red { color: var(--wrong); }
+  .stat-box .lbl { font-size: 12px; color: var(--muted); }
+
+  .btn-restart {
+    width: 100%;
+    padding: 16px;
+    background: linear-gradient(135deg, var(--accent), #ff9f43);
+    color: #0d0d1a;
+    border: none;
+    border-radius: 12px;
+    font-family: 'Kanit', sans-serif;
+    font-weight: 700;
+    font-size: 16px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .btn-restart:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(247,201,72,0.3); }
+
+  /* ---- SCORE TRACKER ---- */
+  .score-tracker {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 10px 16px;
+    font-family: 'Kanit', sans-serif;
+    font-size: 14px;
+    color: var(--muted);
+    z-index: 100;
+    animation: fadeDown 0.6s 0.2s ease both;
+  }
+  .score-tracker strong { color: var(--accent); font-size: 18px; }
+
+  @keyframes fadeDown { from { opacity:0; transform:translateY(-16px); } to { opacity:1; transform:none; } }
+  @keyframes slideUp { from { opacity:0; transform:translateY(20px); } to { opacity:1; transform:none; } }
+  @keyframes fadeUp { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:none; } }
+
+  @media(max-width:480px) {
+    .quiz-card { padding: 24px 18px; }
+    .question-text { font-size: 16px; }
+    .score-tracker { display: none; }
+    .result-stats { grid-template-columns: 1fr 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<div class="score-tracker">คะแนน: <strong id="scoreDisplay">0</strong></div>
+
+<div class="header">
+  <div class="tag">📚 Marketing Quiz</div>
+  <h1>สรุปการตลาด</h1>
+  <p>ทดสอบความรู้จากเนื้อหาบทที่ 1–6</p>
+</div>
+
+<div class="progress-wrap" id="progressWrap">
+  <div class="progress-meta">
+    <span id="progressLabel">ข้อที่ 1 จาก 20</span>
+    <span id="progressPct">5%</span>
+  </div>
+  <div class="progress-bar-bg">
+    <div class="progress-bar-fill" id="progressFill" style="width:5%"></div>
+  </div>
+</div>
+
+<div class="quiz-card" id="quizCard">
+  <div class="chapter-badge" id="chapterBadge"></div>
+  <div class="question-num" id="questionNum"></div>
+  <div class="question-text" id="questionText"></div>
+  <div class="options" id="optionsContainer"></div>
+  <div class="feedback" id="feedback"></div>
+  <button class="btn-next" id="btnNext" onclick="nextQuestion()">ข้อถัดไป →</button>
+</div>
+
+<div class="result-screen" id="resultScreen">
+  <div class="result-card">
+    <span class="result-emoji" id="resultEmoji"></span>
+    <div class="result-title" id="resultTitle"></div>
+    <div class="result-score" id="resultScore"></div>
+    <div class="result-sub" id="resultSub"></div>
+    <div class="result-grade" id="resultGrade"></div>
+    <div class="result-stats">
+      <div class="stat-box">
+        <span class="num green" id="statCorrect">0</span>
+        <span class="lbl">ตอบถูก</span>
+      </div>
+      <div class="stat-box">
+        <span class="num red" id="statWrong">0</span>
+        <span class="lbl">ตอบผิด</span>
+      </div>
+      <div class="stat-box">
+        <span class="num" id="statTotal">20</span>
+        <span class="lbl">ทั้งหมด</span>
+      </div>
+    </div>
+    <button class="btn-restart" onclick="restartQuiz()">🔄 เริ่มใหม่อีกครั้ง</button>
+  </div>
+</div>
+
+<script>
+const questions = [
+  {
+    chapter: "บทที่ 1 : โลกของการตลาด",
+    q: "การตลาดคือกระบวนการพัฒนาผลิตภัณฑ์ สื่อสาร และส่งมอบคุณค่าให้กับลูกค้า โดยจุดกึ่งกลางของกิจกรรมนี้คืออะไร?",
+    opts: ["กำไรสูงสุด", "ผลประโยชน์ร่วมกัน", "การลดต้นทุน", "ส่วนแบ่งตลาด"],
+    answer: 1,
+    explain: "จุดกึ่งกลางของกิจกรรมทางการตลาดคือ ผลประโยชน์ร่วมกัน ระหว่างลูกค้าและองค์กร"
+  },
+  {
+    chapter: "บทที่ 1 : โลกของการตลาด",
+    q: "ความต้องการ (Needs) แตกต่างจากความอยาก (Wants) อย่างไร?",
+    opts: ["Needs เกิดจากสังคม, Wants เกิดจากตัวเอง", "Needs เกิดจากตัวเอง, Wants ได้รับอิทธิพลจากสังคมและวัฒนธรรม", "Needs คือความสามารถซื้อ, Wants คือความต้องการ", "Needs และ Wants เหมือนกัน"],
+    answer: 1,
+    explain: "Needs เกิดจากตัวเอง เป็นความแตกต่างระหว่างสภาวะที่เป็นอยู่กับสภาวะในอุดมคติ ส่วน Wants ได้รับอิทธิพลจากสังคมและวัฒนธรรม"
+  },
+  {
+    chapter: "บทที่ 1 : โลกของการตลาด",
+    q: "Starbucks เปิดสาขาในมหาวิทยาลัยเพื่อให้ลูกค้าเข้าถึงได้สะดวก สอดคล้องกับคุณประโยชน์ด้านใด?",
+    opts: ["คุณประโยชน์ด้านรูปแบบ", "คุณประโยชน์ด้านสถานที่", "คุณประโยชน์ด้านเวลา", "คุณประโยชน์ด้านการครอบครอง"],
+    answer: 1,
+    explain: "คุณประโยชน์ด้านสถานที่ คือการทำให้ผลิตภัณฑ์พร้อมจำหน่ายในสถานที่ที่ลูกค้าสะดวก"
+  },
+  {
+    chapter: "บทที่ 1 : โลกของการตลาด",
+    q: "Marketing Mix สำหรับธุรกิจบริการ (7Ps) มีองค์ประกอบเพิ่มเติมจาก 4Ps ข้อใดบ้าง?",
+    opts: ["Privacy, Personalization, People", "People, Process, Physical Evidence", "People, Place, Promotion", "Process, Privacy, Personalization"],
+    answer: 1,
+    explain: "7Ps สำหรับธุรกิจบริการเพิ่ม People (บุคลากร), Process (กระบวนการ) และ Physical Evidence (สิ่งแวดล้อมทางกายภาพ)"
+  },
+  {
+    chapter: "บทที่ 1 : โลกของการตลาด",
+    q: "Marketing 5.0 มีชื่อว่า 'Technology for Humanity' ซึ่งสร้างต่อยอดจากอะไร?",
+    opts: ["Marketing 3.0 + Digital Marketing", "Marketing 4.0 + Digital Marketing + Omni-Channel", "Marketing 3.0 + Social Media", "Marketing 2.0 + AI"],
+    answer: 1,
+    explain: "Marketing 5.0 = Marketing 4.0 + Digital Marketing + Omni-Channel ที่เชื่อมช่องทาง Online และ Offline ไร้รอยต่อ"
+  },
+  {
+    chapter: "บทที่ 2 : สภาพแวดล้อมทางการตลาด",
+    q: "ข้อใดคือตัวอย่างของสภาพแวดล้อมภายใน (Internal Environment)?",
+    opts: ["เศรษฐกิจ เงินเฟ้อ", "วัฒนธรรมองค์กร และทรัพยากร", "กฎหมายภาษี", "การแข่งขันจากคู่แข่ง"],
+    answer: 1,
+    explain: "สภาพแวดล้อมภายในคือปัจจัยที่องค์กรควบคุมได้ เช่น บุคลากร ทรัพยากร วัฒนธรรมองค์กร"
+  },
+  {
+    chapter: "บทที่ 2 : สภาพแวดล้อมทางการตลาด",
+    q: "ในการวิเคราะห์การแข่งขันระดับมหภาค ตลาดปั๊มน้ำมัน จัดอยู่ในรูปแบบใด?",
+    opts: ["ตลาดผูกขาดสมบูรณ์ (Monopoly)", "ตลาดผู้ขายน้อยราย (Oligopoly)", "ตลาดกึ่งแข่งขันกึ่งผูกขาด (Monopolistic)", "ตลาดแข่งขันสมบูรณ์ (Perfect Competition)"],
+    answer: 1,
+    explain: "ตลาดผู้ขายน้อยราย (Oligopoly) มีผู้ขายไม่กี่ราย เช่น ปั๊มน้ำมัน"
+  },
+  {
+    chapter: "บทที่ 2 : สภาพแวดล้อมทางการตลาด",
+    q: "CSR, Green Marketing และ Cause Marketing เป็นส่วนหนึ่งของ?",
+    opts: ["การตลาดดิจิทัล", "การตลาดเพื่อสังคม", "กลยุทธ์ราคา", "การวิจัยตลาด"],
+    answer: 1,
+    explain: "CSR, Green Marketing และ Cause Marketing ล้วนอยู่ภายใต้ 'การตลาดเพื่อสังคม' ที่มุ่งสร้างผลกระทบเชิงบวกต่อสังคมและสิ่งแวดล้อม"
+  },
+  {
+    chapter: "บทที่ 3 : การวางแผนกลยุทธ์",
+    q: "ใน BCG Matrix ผลิตภัณฑ์ที่มีส่วนแบ่งตลาดสูง และอัตราการเติบโตสูง เรียกว่าอะไร?",
+    opts: ["Cash Cow (วัว)", "Star (ดาว)", "Question Mark (คำถาม)", "Dog (สุนัข)"],
+    answer: 1,
+    explain: "ดาว (Star) คือผลิตภัณฑ์ที่มีส่วนแบ่งการตลาดสูงและอัตราการเติบโตสูง กลยุทธ์คือสร้างส่วนแบ่งตลาด"
+  },
+  {
+    chapter: "บทที่ 3 : การวางแผนกลยุทธ์",
+    q: "กลยุทธ์ Market Penetration ใน Product-Market Growth Matrix คือการทำอะไร?",
+    opts: ["ผลิตสินค้าใหม่เจาะตลาดใหม่", "เน้นส่งเสริมการตลาดในตลาดปัจจุบันด้วยสินค้าปัจจุบัน", "พัฒนาผลิตภัณฑ์ใหม่สำหรับตลาดเดิม", "ขยายสาขาไปตลาดใหม่"],
+    answer: 1,
+    explain: "Market Penetration คือกลยุทธ์การเจาะตลาด ใช้สินค้าปัจจุบันในตลาดปัจจุบัน โดยเน้นการส่งเสริมการตลาด"
+  },
+  {
+    chapter: "บทที่ 3 : การวางแผนกลยุทธ์",
+    q: "การเข้าสู่ตลาดต่างประเทศในรูปแบบ Joint Ventures หมายถึงอะไร?",
+    opts: ["ส่งออกทางอ้อมผ่านบริษัทส่งออก", "ร่วมลงทุนกับชาวต่างชาติ โดยไทยถือหุ้นได้แค่ 49%", "ลงทุนทางตรง 100%", "การให้ Franchise"],
+    answer: 1,
+    explain: "Joint Ventures คือการร่วมลงทุนกับชาวต่างชาติ โดยฝ่ายไทยถือหุ้นได้แค่ 49%"
+  },
+  {
+    chapter: "บทที่ 4 : สารสนเทศทางการตลาด",
+    q: "Big Data มีคุณลักษณะ 3Vs ข้อใดคือคำอธิบายที่ถูกต้อง?",
+    opts: [
+      "Volume=ความเร็ว, Velocity=ปริมาณ, Variety=ความหลากหลาย",
+      "Volume=ปริมาณ, Velocity=ความเร็ว, Variety=ความหลากหลาย",
+      "Volume=ปริมาณ, Velocity=ความหลากหลาย, Variety=ความเร็ว",
+      "Volume=ความหลากหลาย, Velocity=ความเร็ว, Variety=ปริมาณ"
+    ],
+    answer: 1,
+    explain: "3Vs ของ Big Data: Volume=ปริมาณมหาศาล, Velocity=ข้อมูลถูกสร้างและไหลเข้ามาอย่างรวดเร็ว, Variety=ข้อมูลมีหลายรูปแบบ"
+  },
+  {
+    chapter: "บทที่ 4 : สารสนเทศทางการตลาด",
+    q: "Bounce Rate คืออะไร?",
+    opts: ["อัตราการคลิกผ่านโฆษณา", "อัตราที่ลูกค้าเห็นครั้งแรกแล้วปฏิเสธที่จะเข้ารับชม", "อัตราการแปรเปลี่ยนเป็นยอดขาย", "ต้นทุนต่อคำสั่งซื้อ"],
+    answer: 1,
+    explain: "Bounce Rate คืออัตราการตีกลับ หมายถึงลูกค้าเห็นครั้งแรกแล้วปฏิเสธที่จะเข้ารับชมต่อ ยิ่งน้อยยิ่งดี"
+  },
+  {
+    chapter: "บทที่ 4 : สารสนเทศทางการตลาด",
+    q: "ความแตกต่างระหว่าง MIS และ MDSS คืออะไร?",
+    opts: [
+      "MIS วิเคราะห์ข้อมูล, MDSS รวบรวมข้อมูล",
+      "MIS รายงานข้อมูลดิบว่าเกิดอะไรขึ้น, MDSS นำข้อมูลมาวิเคราะห์เชิงเปรียบเทียบเพื่อหาคำตอบ",
+      "MIS ใช้ Social Media, MDSS ใช้ข้อมูลภายใน",
+      "MIS และ MDSS ทำงานเหมือนกัน"
+    ],
+    answer: 1,
+    explain: "MIS รายงานสิ่งที่เกิดขึ้น (ข้อมูลดิบ) ส่วน MDSS นำข้อมูลจาก MIS มาวิเคราะห์หาความแตกต่างและเปรียบเทียบเพื่อหาคำตอบ"
+  },
+  {
+    chapter: "บทที่ 5 : การวิจัยการตลาด",
+    q: "การวิจัยประเภท Custom Research คืออะไร?",
+    opts: [
+      "ข้อมูลที่องค์กรอื่นจัดเก็บไว้เพื่อขาย",
+      "ข้อมูลปฐมภูมิที่มุ่งหาคำตอบสำหรับองค์กรใดองค์กรหนึ่งโดยเฉพาะ",
+      "ข้อมูลจากฐานข้อมูลสถิติที่มีอยู่แล้ว",
+      "ข้อมูลจากรายงานวิจัยเก่า"
+    ],
+    answer: 1,
+    explain: "Custom Research คือข้อมูลแบบสั่งทำ เป็นข้อมูลปฐมภูมิที่มุ่งหาคำตอบสำหรับองค์กรใดองค์กรหนึ่งโดยเฉพาะ เช่น แบบสอบถาม การสัมภาษณ์"
+  },
+  {
+    chapter: "บทที่ 5 : การวิจัยการตลาด",
+    q: "การสุ่มแบบ Probability Samples ต่างจาก Non-Probability Samples อย่างไร?",
+    opts: [
+      "Probability ใช้ความสะดวก, Non-Probability ใช้ความน่าจะเป็น",
+      "Probability ทุกคนมีโอกาสถูกเลือกเท่ากัน สามารถอ้างอิงถึงประชากรทั้งหมดได้",
+      "Probability เลือกจากโควตา, Non-Probability เลือกสุ่ม",
+      "ทั้งสองประเภทผลลัพธ์เหมือนกัน"
+    ],
+    answer: 1,
+    explain: "Probability Samples: ทุกคนมีโอกาสถูกเลือกเท่ากัน สามารถอ้างอิงถึงประชากรทั้งหมดได้ ส่วน Non-Probability โอกาสถูกเลือกไม่เท่ากัน"
+  },
+  {
+    chapter: "บทที่ 6 : พฤติกรรมผู้บริโภค",
+    q: "ปัจจัยภายใน (จิตวิทยา) ที่ส่งผลต่อพฤติกรรมผู้บริโภคมีอะไรบ้าง?",
+    opts: [
+      "วัฒนธรรม กลุ่มอ้างอิง ชนชั้นทางสังคม",
+      "การรับรู้ แรงจูงใจ การเรียนรู้ ทัศนคติ บุคลิกภาพ",
+      "ราคา สถานที่ โปรโมชัน",
+      "อายุ อาชีพ รายได้"
+    ],
+    answer: 1,
+    explain: "ปัจจัยภายใน (จิตวิทยา) ได้แก่ การรับรู้ แรงจูงใจ การเรียนรู้ ทัศนคติ และบุคลิกภาพ"
+  },
+  {
+    chapter: "บทที่ 6 : พฤติกรรมผู้บริโภค",
+    q: "กระบวนการตัดสินใจซื้อของผู้บริโภคขั้นตอนใดเกิดขึ้นหลังจากการซื้อ?",
+    opts: ["การค้นหาข้อมูล", "การประเมินทางเลือก", "การประเมินหลังการซื้อ", "การตระหนักถึงปัญหา"],
+    answer: 2,
+    explain: "กระบวนการตัดสินใจซื้อมี 5 ขั้นตอน: 1.ตระหนักถึงปัญหา → 2.ค้นหาข้อมูล → 3.ประเมินทางเลือก → 4.เลือกผลิตภัณฑ์ → 5.ประเมินหลังการซื้อ"
+  },
+  {
+    chapter: "บทที่ 6 : พฤติกรรมผู้บริโภค",
+    q: "อุปสงค์ไม่ยืดหยุ่น (Inelastic Demand) ในตลาด B2B หมายความว่าอะไร?",
+    opts: [
+      "Demand ขึ้น ๆ ลง ๆ ตามฤดูกาล",
+      "ไม่ว่าสถานการณ์จะเป็นอย่างไร ธุรกิจก็ต้องดำเนินต่อไป เช่น น้ำมันแพงขึ้น โลจิสติกส์ก็ยังต้องวิ่ง",
+      "Demand พึ่งพาอุปสงค์ของอีกธุรกิจหนึ่ง",
+      "Demand เชื่อมโยงระหว่างสินค้าหลายชนิด"
+    ],
+    answer: 1,
+    explain: "อุปสงค์ไม่ยืดหยุ่น = ไม่ว่าสถานการณ์จะเป็นอย่างไร ธุรกิจก็ต้องดำเนินต่อไป เช่น ค่าน้ำมันแพงขึ้น ธุรกิจโลจิสติกส์ก็ยังต้องดำเนินต่อ"
+  },
+  {
+    chapter: "บทที่ 6 : พฤติกรรมผู้บริโภค",
+    q: "ในกระบวนการตัดสินใจซื้อ B2B ใครคือ 'ผู้มีอิทธิพล (Influencer)'?",
+    opts: [
+      "ผู้ที่ดำเนินการสั่งซื้อและทำสัญญากับผู้ขาย",
+      "ผู้เชี่ยวชาญที่คอยให้คำแนะนำ เช่น ที่ปรึกษา IT",
+      "ผู้ที่ต้องการสินค้าเพื่อใช้งาน",
+      "ผู้ที่ตัดสินใจในขั้นตอนสุดท้าย"
+    ],
+    answer: 1,
+    explain: "ผู้มีอิทธิพล (Influencer) คือผู้เชี่ยวชาญที่คอยให้คำแนะนำ เช่น ที่ปรึกษา IT ที่แนะนำว่าซอฟต์แวร์ตัวไหนเหมาะกับองค์กร"
+  }
+];
+
+let current = 0;
+let score = 0;
+let answered = false;
+
+function shuffle(arr) {
+  return [...arr].sort(() => Math.random() - 0.5);
+}
+
+// Shuffle questions on load
+const shuffled = shuffle(questions).slice(0, 20);
+
+function loadQuestion() {
+  const q = shuffled[current];
+  answered = false;
+
+  document.getElementById('chapterBadge').textContent = q.chapter;
+  document.getElementById('questionNum').textContent = `ข้อที่ ${current + 1}`;
+  document.getElementById('questionText').textContent = q.q;
+
+  const total = shuffled.length;
+  const pct = Math.round(((current) / total) * 100);
+  document.getElementById('progressLabel').textContent = `ข้อที่ ${current + 1} จาก ${total}`;
+  document.getElementById('progressPct').textContent = `${pct}%`;
+  document.getElementById('progressFill').style.width = `${Math.max(pct, 3)}%`;
+
+  const container = document.getElementById('optionsContainer');
+  container.innerHTML = '';
+  const letters = ['A', 'B', 'C', 'D'];
+  q.opts.forEach((opt, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'option';
+    btn.innerHTML = `<span class="option-letter">${letters[i]}</span>${opt}`;
+    btn.onclick = () => selectAnswer(i, btn);
+    container.appendChild(btn);
+  });
+
+  const fb = document.getElementById('feedback');
+  fb.className = 'feedback';
+  fb.innerHTML = '';
+  document.getElementById('btnNext').className = 'btn-next';
+
+  // Animate card
+  const card = document.getElementById('quizCard');
+  card.style.animation = 'none';
+  card.offsetHeight;
+  card.style.animation = 'slideUp 0.4s ease both';
+}
+
+function selectAnswer(idx, btn) {
+  if (answered) return;
+  answered = true;
+
+  const q = shuffled[current];
+  const opts = document.querySelectorAll('.option');
+  opts.forEach(o => o.disabled = true);
+
+  const fb = document.getElementById('feedback');
+
+  if (idx === q.answer) {
+    score++;
+    document.getElementById('scoreDisplay').textContent = score;
+    btn.classList.add('correct');
+    fb.className = 'feedback correct-fb show';
+    fb.innerHTML = `<strong>✅ ถูกต้อง!</strong>${q.explain}`;
+  } else {
+    btn.classList.add('wrong');
+    opts[q.answer].classList.add('correct');
+    fb.className = 'feedback wrong-fb show';
+    fb.innerHTML = `<strong>❌ ไม่ถูกต้อง</strong>${q.explain}`;
+  }
+
+  const btnNext = document.getElementById('btnNext');
+  btnNext.className = 'btn-next show';
+  btnNext.textContent = current < shuffled.length - 1 ? 'ข้อถัดไป →' : 'ดูผลคะแนน 🎯';
+}
+
+function nextQuestion() {
+  current++;
+  if (current >= shuffled.length) {
+    showResult();
+  } else {
+    loadQuestion();
+  }
+}
+
+function showResult() {
+  document.getElementById('quizCard').style.display = 'none';
+  document.getElementById('progressWrap').style.display = 'none';
+
+  const total = shuffled.length;
+  const pct = Math.round((score / total) * 100);
+  const rs = document.getElementById('resultScreen');
+  rs.className = 'result-screen show';
+
+  let emoji, title, gradeClass, gradeText;
+  if (pct >= 90) { emoji='🏆'; title='เยี่ยมมาก!'; gradeClass='grade-s'; gradeText='S — ยอดเยี่ยม'; }
+  else if (pct >= 75) { emoji='⭐'; title='ดีมาก!'; gradeClass='grade-a'; gradeText='A — ดีมาก'; }
+  else if (pct >= 60) { emoji='👍'; title='ผ่านเกณฑ์!'; gradeClass='grade-b'; gradeText='B — พอใช้'; }
+  else { emoji='📖'; title='ต้องทบทวนอีกครั้ง'; gradeClass='grade-c'; gradeText='C — ต้องพัฒนา'; }
+
+  document.getElementById('resultEmoji').textContent = emoji;
+  document.getElementById('resultTitle').textContent = title;
+  document.getElementById('resultScore').innerHTML = `${score}<span>/${total}</span>`;
+  document.getElementById('resultSub').textContent = `คิดเป็น ${pct}% จากทั้งหมด ${total} ข้อ`;
+  const g = document.getElementById('resultGrade');
+  g.className = `result-grade ${gradeClass}`;
+  g.textContent = gradeText;
+  document.getElementById('statCorrect').textContent = score;
+  document.getElementById('statWrong').textContent = total - score;
+  document.getElementById('statTotal').textContent = total;
+}
+
+function restartQuiz() {
+  current = 0;
+  score = 0;
+  answered = false;
+  document.getElementById('scoreDisplay').textContent = 0;
+  document.getElementById('quizCard').style.display = 'block';
+  document.getElementById('progressWrap').style.display = 'block';
+  document.getElementById('resultScreen').className = 'result-screen';
+
+  // Re-shuffle
+  const newShuffle = shuffle(questions).slice(0, 20);
+  shuffled.length = 0;
+  newShuffle.forEach(q => shuffled.push(q));
+
+  loadQuestion();
+}
+
+// Start
+loadQuestion();
+</script>
+</body>
+</html>
